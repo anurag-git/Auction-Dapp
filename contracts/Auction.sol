@@ -1,13 +1,9 @@
 /*
 Auction Platform on Blockchain:
-All the online auction platforms that currently exist are based on one centralized operation. They rely on
-proprietary and closed software. As a result of this centralization, these platforms share the same
-limitations. i.e. Lack of transparency, Closed and Limited.
-With blockchain, you will overcome these limitations and build a new auction platform that is open to
-all, transparent in nature and is peer to peer.
+All the online auction platforms that currently exist are based on one centralized operation. They rely on proprietary and closed software. As a result of this centralization, these platforms share the same limitations. i.e. Lack of transparency, Closed and Limited.
+With blockchain, you will overcome these limitations and build a new auction platform that is open to all, transparent in nature and is peer to peer.
 
-Below are the set of rules that your auction platform will follow. If some rule is missing, assume suitably
-and sensibly!
+Below are the set of rules that your auction platform will follow. If some rule is missing, assume suitably and sensibly!
 1. Owner of an item announces that an item is up for sale, sets the base price and starts the timer.
 2. Each bidder has a fixed amount disposable for auction in his/her wallet. Bidder can’t bid more
 than the wallet contents.
@@ -24,7 +20,7 @@ Stakeholders:
 2. Bidders
 */
 
-pragma solidity ^0.4.22;
+pragma solidity ^0.4.24;
 
 contract Auction {
     // Parameters of the auction. Times are either
@@ -39,6 +35,7 @@ contract Auction {
 
     // Allowed withdrawals of previous bids
     mapping(address => uint) private pendingReturns;
+
     mapping(address => Item) private itemList;
     mapping(address => uint) private accountBalances;
 
@@ -58,12 +55,17 @@ contract Auction {
     event HighestBidIncreased(address bidder, uint amount);
     event AuctionEnded(address winner, uint amount);
 
+    // Auction states to control function calls
     enum AuctionState {
         NotStarted,
         Started,
         Ended
     }
 
+    // Ideally state variable should be private but
+    // needed to make it public so that I can access it in truffle test cases
+    // Another way is to make this variable private and create a public getter function
+    // to get the current Auction State
     AuctionState public state;
 
     modifier inState(AuctionState _state) {
@@ -90,6 +92,11 @@ contract Auction {
         state = AuctionState.NotStarted;
     }
 
+    // Needed to add this reset function, as
+    // only first truffle test which changes state works but after that it is not working.
+    // Ideally, every truffle test case run in clean environment.
+    // TODO: Remove this function and make truffle tests work without the use of this function
+
     function resetState() public {
         state = AuctionState.NotStarted;
         highestBid = 0;
@@ -107,7 +114,7 @@ contract Auction {
            itemBasePrice: _basePrice,
            itemHighestBidder: address(0x0),  // initially nobody is owner, hence setting to "0" address
            itemHighestBidAmount: 0,
-           itemStatus: "Not Sold"
+           itemStatus: "Not Sold" // initially item is "Not Sold", if nobody bids it remains unsold else it gets sold to highest bidder.
         });
 
         uniqueID++;
@@ -123,6 +130,19 @@ contract Auction {
 
         Item memory bidItem = itemList[owner];
         require(msg.value > bidItem.itemBasePrice, "Bid should be greater than Base Price");
+
+        /*
+        TODO:
+        Tried below commented code for Point 2 but didn't work for me.
+        Need to relook at it.
+        2. Each bidder has a fixed amount disposable for auction in his/her wallet. Bidder can’t bid more
+        than the wallet contents.
+        ==>Not able to implement this scenario, tried few ideas like
+        taking the balances of all accounts and adding it in a mapping, but it didn't work.
+
+        However, getBalance() of any account returns current account balances
+        but same code doesn't add the balance to mapping against the particular owner.
+        */
 
         // storing account balance of each bidder
         //accountBalances[msg.sender] = address(msg.sender).balance;
@@ -167,6 +187,10 @@ contract Auction {
               return false;
           }
           return true;
+
+          /* TODO:
+            We could emit Withdraw event, realize a  bit late for implementing and testing
+          */
     }
 
     /// End the auction and send the highest bid to the owner.
