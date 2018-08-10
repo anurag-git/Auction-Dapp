@@ -30,8 +30,8 @@ contract Auction {
     uint private auctionEndTime;
 
     // Current state of the auction.
-    address public highestBidder;
-    uint public highestBid;
+    address private highestBidder;
+    uint private highestBid;
 
     // Allowed withdrawals of previous bids
     mapping(address => uint) private pendingReturns;
