@@ -6,8 +6,19 @@ contract("Auction Contract", accounts => {
   const account2 = accounts[2];
   const account3 = accounts[3];
 
+  let instance;
+
+  beforeEach(async () => {
+      //BeforeEach will be called before each "it" function
+      //So do whatever is common to all "it", which has to be
+      //done before calling "it"
+
+      //Deploy the contract with the specified value
+      instance = await Auction.new({from: ownerAccount});
+
+    });
+
   it("Checking Initial Smart Contract state", async () => {
-    let instance = await Auction.deployed();
     let state = await instance.state.call();
     let state_1 = state.toNumber();
     // state should be "Not Started" i.e "0" as it is enum
@@ -15,8 +26,6 @@ contract("Auction Contract", accounts => {
   });
 
   it("Auction Success Flow", async () => {
-    let instance = await Auction.deployed();
-
     // Start the Auction, aurction time is 2 secs
     await instance.auctionStart(2, "aa", 100);
 
@@ -201,8 +210,6 @@ contract("Auction Contract", accounts => {
   });
 
   it("Bid should be greater than base Price", async () => {
-    let instance = await Auction.deployed();
-    await instance.resetState(); // this should not be needed as contract
     // Start the Auction, auction time is 2 secs
     await instance.auctionStart(2, "aa", 100);
     try {
@@ -214,10 +221,8 @@ contract("Auction Contract", accounts => {
   });
 
   it("Bid should be greater than highest bid", async () => {
-    let instance = await Auction.deployed();
     let owner = await instance.owner.call();
     // Start the Auction, aurction time is 2 secs
-    await instance.resetState(); // this should not be needed as contract is supposed to redeployed
     await instance.auctionStart(2, "aa", 100);
     await instance.bid({ from: account1, value: 101 });
 
@@ -265,10 +270,8 @@ contract("Auction Contract", accounts => {
   });
 
   it("Attempt to withdraw Bid amount before auction ends", async () => {
-    let instance = await Auction.deployed();
     let owner = await instance.owner.call();
     // Start the Auction, aurction time is 2 secs
-    await instance.resetState(); // this should not be needed as contract is supposed to redeployed
     await instance.auctionStart(10, "aa", 100);
     await instance.bid({ from: account1, value: 101 });
 
@@ -285,10 +288,8 @@ contract("Auction Contract", accounts => {
   });
 
   it("Attempt to withdraw Pending amount before auction ends", async () => {
-    let instance = await Auction.deployed();
     let owner = await instance.owner.call();
     // Start the Auction, aurction time is 2 secs
-    await instance.resetState(); // this should not be needed as contract is supposed to redeployed
     await instance.auctionStart(10, "aa", 100);
     await instance.bid({ from: account1, value: 101 });
 
