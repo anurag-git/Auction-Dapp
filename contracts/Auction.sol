@@ -1,4 +1,4 @@
-/*
+/* 
 Auction Platform on Blockchain:
 All the online auction platforms that currently exist are based on one centralized operation. They rely on proprietary and closed software. As a result of this centralization, these platforms share the same limitations. i.e. Lack of transparency, Closed and Limited.
 With blockchain, you will overcome these limitations and build a new auction platform that is open to all, transparent in nature and is peer to peer.
